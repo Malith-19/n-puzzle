@@ -38,7 +38,21 @@ def compare(puzzle1, puzzle2):
     return differences
 
 
-starter, goal = get_input()
+def blank_finder(puzzle):
+    rows = len(puzzle)
+    columns = len(puzzle[0])
 
-print(starter,"\n",goal)
-print(compare(starter, goal))
+    blanks = []
+    for i in range(rows):
+        for j in range(columns):
+            if puzzle[i][j] == "-":
+                blanks.append([i, j])
+    return blanks
+
+
+def solve(starter, goal, depth=0):
+    depth += 1
+
+
+starter, goal = get_input()
+print(blank_finder(starter))
