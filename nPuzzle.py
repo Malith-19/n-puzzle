@@ -1,5 +1,11 @@
 import copy
 
+class Node:
+    def __init__(self, f, puzzle):
+        self.f = f
+        self.puzzle = puzzle
+
+
 def text_to_puzzle(filename):
     puzzle = []
     try:
@@ -57,7 +63,6 @@ def one_move(puzzle, blank_location):
 
     # move left
     if blank_location[1] != 0:
-
         puzzle_left_copy = copy.deepcopy(puzzle)
         puzzle_left_copy[blank_location[0]][blank_location[1]] = puzzle_left_copy[blank_location[0]][
             blank_location[1] - 1]
@@ -65,25 +70,25 @@ def one_move(puzzle, blank_location):
 
         outputs.append(puzzle_left_copy)
 
-    if blank_location[1] != len(puzzle[0]):
-
+    # move right
+    if blank_location[1] != len(puzzle[0]) - 1:
         puzzle_right_copy = copy.deepcopy(puzzle)
 
-        puzzle_right_copy[blank_location[0]][blank_location[1]] = puzzle_left_copy[blank_location[0]][
+        puzzle_right_copy[blank_location[0]][blank_location[1]] = puzzle_right_copy[blank_location[0]][
             blank_location[1] + 1]
         puzzle_right_copy[blank_location[0]][blank_location[1] + 1] = "-"
         outputs.append(puzzle_right_copy)
 
-    if blank_location[0] < 0:
-
+    # move up
+    if blank_location[0] != 0:
         puzzle_up_copy = copy.deepcopy(puzzle)
 
         puzzle_up_copy[blank_location[0]][blank_location[1]] = puzzle_up_copy[blank_location[0] - 1][blank_location[1]]
         puzzle_up_copy[blank_location[0] - 1][blank_location[1]] = "-"
         outputs.append(puzzle_up_copy)
 
-    if blank_location != len(puzzle):
-
+    # move down
+    if blank_location[0] != len(puzzle)-1:
         puzzle_down_copy = copy.deepcopy(puzzle)
 
         puzzle_down_copy[blank_location[0]][blank_location[1]] = puzzle_down_copy[blank_location[0] + 1][
@@ -94,24 +99,50 @@ def one_move(puzzle, blank_location):
     return outputs
 
 
+# function to print a given puzzle row by row
+def print_puzzle(puzzle):
+    for row in puzzle:
+        print(" ".join(row))
 
 
 
 def moves(puzzle, blank_locations):
-    # moving left
+    outputs = []
 
-    # moving right
-    # moving up
-    # moving down
+    for blank_location in blank_locations:
+        moved_puzzles = one_move(puzzle, blank_location)
+        outputs += moved_puzzles
 
-    pass
+    return outputs
 
+
+tree = []
+checked = []
 
 def solve(starter, goal, depth=0):
-    depth += 1
+    checked.append(starter)
+    print_puzzle(starter)
+    print("  |  ")
+    print("  |  ")
+    print("  V  ")
+
+    blanks = blank_finder(starter)
+    results = moves(starter, blanks)
+
+    for result in results:
+        if result in checked:
+            continue
+        h = compare(result, goal)
+        if h == 0:
+            return
+        # f = h + depth
+        node = Node(depth + h, result)
+
+        tree.append(node)
+
+    tree.sort(key=lambda x: x.f)
+    solve(tree[0].puzzle, goal, depth + 1)
 
 
 starter, goal = get_input()
-
-blanks = blank_finder(starter)
-print(one_move(starter,blanks[0]))
+solve(starter, goal)
