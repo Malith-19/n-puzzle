@@ -1,9 +1,11 @@
 import copy
 
+
 class Node:
-    def __init__(self, f, puzzle):
+    def __init__(self, f, puzzle, parent):
         self.f = f
         self.puzzle = puzzle
+        self.parent = parent
 
 
 def text_to_puzzle(filename):
@@ -88,7 +90,7 @@ def one_move(puzzle, blank_location):
         outputs.append(puzzle_up_copy)
 
     # move down
-    if blank_location[0] != len(puzzle)-1:
+    if blank_location[0] != len(puzzle) - 1:
         puzzle_down_copy = copy.deepcopy(puzzle)
 
         puzzle_down_copy[blank_location[0]][blank_location[1]] = puzzle_down_copy[blank_location[0] + 1][
@@ -105,7 +107,6 @@ def print_puzzle(puzzle):
         print(" ".join(row))
 
 
-
 def moves(puzzle, blank_locations):
     outputs = []
 
@@ -119,30 +120,40 @@ def moves(puzzle, blank_locations):
 tree = []
 checked = []
 
-def solve(starter, goal, depth=0):
-    checked.append(starter)
-    print_puzzle(starter)
-    print("  |  ")
-    print("  |  ")
-    print("  V  ")
 
-    blanks = blank_finder(starter)
-    results = moves(starter, blanks)
+def solve(starter, goal, depth=0):
+    checked.append(starter.puzzle)
+
+    blanks = blank_finder(starter.puzzle)
+    results = moves(starter.puzzle, blanks)
 
     for result in results:
         if result in checked:
             continue
         h = compare(result, goal)
-        if h == 0:
-            return
+
+
         # f = h + depth
-        node = Node(depth + h, result)
+        node = Node(depth + h, result, starter)
+        if h == 0:
+            return node
 
         tree.append(node)
 
     tree.sort(key=lambda x: x.f)
-    solve(tree[0].puzzle, goal, depth + 1)
+    return solve(tree.pop(0), goal, depth + 1)
 
 
 starter, goal = get_input()
-solve(starter, goal)
+starter_node = Node(0, starter, None)
+ending_node = solve(starter_node, goal)
+
+
+
+while ending_node:
+    print_puzzle(ending_node.puzzle)
+    ending_node = ending_node.parent
+    if ending_node:
+        print(" / \  ")
+        print("  |  ")
+        print("  |  ")
