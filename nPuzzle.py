@@ -40,6 +40,7 @@ def text_to_puzzle(filename):
     return puzzle
 
 
+# getting input via filenames
 def get_input():
     filenames = input("Enter the start configuration filename comma separated by goal configuration filename: ").split(
         ",")
@@ -55,6 +56,7 @@ def get_input():
     return get_input()
 
 
+# comparing puzzles using misplaced tiles
 def compare(puzzle1, puzzle2):
     differences = 0
     for i in range(len(puzzle1)):
@@ -64,6 +66,7 @@ def compare(puzzle1, puzzle2):
     return differences
 
 
+# finding the blank locations in a puzzle
 def blank_finder(puzzle):
     rows = len(puzzle)
     columns = len(puzzle[0])
@@ -80,7 +83,7 @@ def blank_finder(puzzle):
 def one_move(puzzle, blank_location):
     outputs = []
 
-    # move left
+    # move left the blank
     if blank_location[1] != 0:
         puzzle_left_copy = deepcopy(puzzle)
         move = "(" + puzzle_left_copy[blank_location[0]][
@@ -91,7 +94,7 @@ def one_move(puzzle, blank_location):
 
         outputs.append([puzzle_left_copy, move])
 
-    # move right
+    # move right the blank
     if blank_location[1] != len(puzzle[0]) - 1:
         puzzle_right_copy = deepcopy(puzzle)
         move = "(" + puzzle_right_copy[blank_location[0]][
@@ -101,7 +104,7 @@ def one_move(puzzle, blank_location):
         puzzle_right_copy[blank_location[0]][blank_location[1] + 1] = "-"
         outputs.append([puzzle_right_copy, move])
 
-    # move up
+    # move up the blank
     if blank_location[0] != 0:
         puzzle_up_copy = deepcopy(puzzle)
         move = "(" + puzzle_up_copy[blank_location[0] - 1][blank_location[1]] + ",down)"
@@ -109,7 +112,7 @@ def one_move(puzzle, blank_location):
         puzzle_up_copy[blank_location[0] - 1][blank_location[1]] = "-"
         outputs.append([puzzle_up_copy, move])
 
-    # move down
+    # move down the blank
     if blank_location[0] != len(puzzle) - 1:
         puzzle_down_copy = deepcopy(puzzle)
         move = "(" + puzzle_down_copy[blank_location[0] + 1][
@@ -183,4 +186,5 @@ starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
 ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to find
 # the path
 
+# printing the path to solve the puzzle
 print_path(ending_node)
