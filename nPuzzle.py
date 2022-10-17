@@ -1,13 +1,29 @@
-import copy
+from copy import deepcopy
+import random
 
 
 class Node:
-    def __init__(self, f, puzzle, parent):
+    def __init__(self, f, puzzle, parent, move):
         self.f = f
         self.puzzle = puzzle
         self.parent = parent
+        self.move = move
 
 
+# function to generate a random n puzzle
+def generate_random_puzzle(size, blanks):
+    puzzle = [str(i) for i in range(1, size * size - blanks + 1)]  # adding numbers to list
+    puzzle += ["-" for i in range(blanks)]  # adding blanks to list
+    random.shuffle(puzzle)
+
+    puzzle_2d = []
+    for i in range(size):
+        puzzle_2d.append(puzzle[i * size:(i + 1) * size])
+
+    return puzzle_2d
+
+
+# getting puzzle from a given file
 def text_to_puzzle(filename):
     puzzle = []
     try:
@@ -60,43 +76,48 @@ def blank_finder(puzzle):
     return blanks
 
 
+# function to do a one move in a puzzle.
 def one_move(puzzle, blank_location):
     outputs = []
 
     # move left
     if blank_location[1] != 0:
-        puzzle_left_copy = copy.deepcopy(puzzle)
+        puzzle_left_copy = deepcopy(puzzle)
+        move = "(" + puzzle_left_copy[blank_location[0]][
+            blank_location[1] - 1] + ",right)"
         puzzle_left_copy[blank_location[0]][blank_location[1]] = puzzle_left_copy[blank_location[0]][
             blank_location[1] - 1]
         puzzle_left_copy[blank_location[0]][blank_location[1] - 1] = "-"
 
-        outputs.append(puzzle_left_copy)
+        outputs.append([puzzle_left_copy, move])
 
     # move right
     if blank_location[1] != len(puzzle[0]) - 1:
-        puzzle_right_copy = copy.deepcopy(puzzle)
-
+        puzzle_right_copy = deepcopy(puzzle)
+        move = "(" + puzzle_right_copy[blank_location[0]][
+            blank_location[1] + 1] + ",left)"
         puzzle_right_copy[blank_location[0]][blank_location[1]] = puzzle_right_copy[blank_location[0]][
             blank_location[1] + 1]
         puzzle_right_copy[blank_location[0]][blank_location[1] + 1] = "-"
-        outputs.append(puzzle_right_copy)
+        outputs.append([puzzle_right_copy, move])
 
     # move up
     if blank_location[0] != 0:
-        puzzle_up_copy = copy.deepcopy(puzzle)
-
+        puzzle_up_copy = deepcopy(puzzle)
+        move = "(" + puzzle_up_copy[blank_location[0] - 1][blank_location[1]] + ",down)"
         puzzle_up_copy[blank_location[0]][blank_location[1]] = puzzle_up_copy[blank_location[0] - 1][blank_location[1]]
         puzzle_up_copy[blank_location[0] - 1][blank_location[1]] = "-"
-        outputs.append(puzzle_up_copy)
+        outputs.append([puzzle_up_copy, move])
 
     # move down
     if blank_location[0] != len(puzzle) - 1:
-        puzzle_down_copy = copy.deepcopy(puzzle)
-
+        puzzle_down_copy = deepcopy(puzzle)
+        move = "(" + puzzle_down_copy[blank_location[0] + 1][
+            blank_location[1]] + ",up)"
         puzzle_down_copy[blank_location[0]][blank_location[1]] = puzzle_down_copy[blank_location[0] + 1][
             blank_location[1]]
         puzzle_down_copy[blank_location[0] + 1][blank_location[1]] = "-"
-        outputs.append(puzzle_down_copy)
+        outputs.append([puzzle_down_copy, move])
 
     return outputs
 
@@ -107,6 +128,7 @@ def print_puzzle(puzzle):
         print(" ".join(row))
 
 
+# Function to move the all blanks to another position. But at one time only moving one blank.
 def moves(puzzle, blank_locations):
     outputs = []
 
@@ -117,10 +139,7 @@ def moves(puzzle, blank_locations):
     return outputs
 
 
-tree = []
-checked = []
-
-
+# main solving function
 def solve(starter, goal, depth=0):
     checked.append(starter.puzzle)
 
@@ -128,32 +147,40 @@ def solve(starter, goal, depth=0):
     results = moves(starter.puzzle, blanks)
 
     for result in results:
-        if result in checked:
+        puzzle = result[0]
+        move = result[1]
+        if puzzle in checked:
             continue
-        h = compare(result, goal)
-
+        h = compare(puzzle, goal)
 
         # f = h + depth
-        node = Node(depth + h, result, starter)
+        node = Node(depth + h, puzzle, starter, move)
         if h == 0:
             return node
 
         tree.append(node)
+        checked.append(node)
 
     tree.sort(key=lambda x: x.f)
     return solve(tree.pop(0), goal, depth + 1)
 
 
-starter, goal = get_input()
-starter_node = Node(0, starter, None)
-ending_node = solve(starter_node, goal)
+# printing the path
+def print_path(ending_node):
+    if ending_node.parent:
+        print_path(ending_node.parent)
+        print(ending_node.move)
+    return
 
 
+# driver code
+tree = []
+checked = []
 
-while ending_node:
-    print_puzzle(ending_node.puzzle)
-    ending_node = ending_node.parent
-    if ending_node:
-        print(" / \  ")
-        print("  |  ")
-        print("  |  ")
+starter, goal = get_input()  # getting the starter and the goal puzzle
+
+starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
+ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to find
+# the path
+
+print_path(ending_node)
