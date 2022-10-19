@@ -20,7 +20,39 @@ def generate_random_puzzle(size, blanks):
     for i in range(size):
         puzzle_2d.append(puzzle[i * size:(i + 1) * size])
 
-    return puzzle_2d
+    goal = random_move(puzzle_2d)
+
+    return puzzle_2d,goal
+
+def random_move(puzzle):
+    moves = random.randint(1,10)
+    goal = deepcopy(puzzle)
+    for i in range(moves):
+        blank_locations = blank_finder(goal)
+        moving_blank = blank_locations[random.randint(0,len(blank_locations)-1)]
+        move_type = random.randint(0,3)
+
+        if move_type == 0:
+            move = move_left(goal,moving_blank)
+            if move:
+                goal = move[0]
+
+        elif move_type == 1:
+            move = move_right(goal,moving_blank)
+            if move:
+                goal = move[0]
+
+        elif move_type == 2:
+            move = move_up(goal,moving_blank)
+            if move:
+                goal = move[0]
+
+        else:
+            move = move_up(goal,moving_blank)
+            if move:
+                goal = move[0]
+
+    return goal
 
 
 # getting puzzle from a given file
@@ -101,11 +133,7 @@ def blank_finder(puzzle):
     return blanks
 
 
-# function to do a one move in a puzzle.
-def one_move(puzzle, blank_location):
-    outputs = []
-
-    # move left the blank
+def move_left(puzzle,blank_location):
     if blank_location[1] != 0:
         puzzle_left_copy = deepcopy(puzzle)
         move = "(" + puzzle_left_copy[blank_location[0]][
@@ -113,10 +141,10 @@ def one_move(puzzle, blank_location):
         puzzle_left_copy[blank_location[0]][blank_location[1]] = puzzle_left_copy[blank_location[0]][
             blank_location[1] - 1]
         puzzle_left_copy[blank_location[0]][blank_location[1] - 1] = "-"
+        return [puzzle_left_copy,move]
 
-        outputs.append([puzzle_left_copy, move])
 
-    # move right the blank
+def move_right(puzzle,blank_location):
     if blank_location[1] != len(puzzle[0]) - 1:
         puzzle_right_copy = deepcopy(puzzle)
         move = "(" + puzzle_right_copy[blank_location[0]][
@@ -124,17 +152,17 @@ def one_move(puzzle, blank_location):
         puzzle_right_copy[blank_location[0]][blank_location[1]] = puzzle_right_copy[blank_location[0]][
             blank_location[1] + 1]
         puzzle_right_copy[blank_location[0]][blank_location[1] + 1] = "-"
-        outputs.append([puzzle_right_copy, move])
+        return [puzzle_right_copy, move]
 
-    # move up the blank
+def move_up(puzzle,blank_location):
     if blank_location[0] != 0:
         puzzle_up_copy = deepcopy(puzzle)
         move = "(" + puzzle_up_copy[blank_location[0] - 1][blank_location[1]] + ",down)"
         puzzle_up_copy[blank_location[0]][blank_location[1]] = puzzle_up_copy[blank_location[0] - 1][blank_location[1]]
         puzzle_up_copy[blank_location[0] - 1][blank_location[1]] = "-"
-        outputs.append([puzzle_up_copy, move])
+        return [puzzle_up_copy, move]
 
-    # move down the blank
+def move_down(puzzle,blank_location):
     if blank_location[0] != len(puzzle) - 1:
         puzzle_down_copy = deepcopy(puzzle)
         move = "(" + puzzle_down_copy[blank_location[0] + 1][
@@ -142,7 +170,17 @@ def one_move(puzzle, blank_location):
         puzzle_down_copy[blank_location[0]][blank_location[1]] = puzzle_down_copy[blank_location[0] + 1][
             blank_location[1]]
         puzzle_down_copy[blank_location[0] + 1][blank_location[1]] = "-"
-        outputs.append([puzzle_down_copy, move])
+        return [puzzle_down_copy, move]
+# function to do a one move in a puzzle.
+def one_move(puzzle, blank_location):
+    outputs = []
+
+    # move left the blank
+    movements = [move_left(puzzle,blank_location),move_right(puzzle,blank_location),move_up(puzzle,blank_location),move_down(puzzle,blank_location)]
+
+    for move in movements:
+        if move:
+            outputs.append(move)
 
     return outputs
 
@@ -202,7 +240,15 @@ def write_path(ending_node):
 tree = []
 checked = []
 
-starter, goal = get_input()  # getting the starter and the goal puzzle
+# starter, goal = get_input()  # getting the starter and the goal puzzle
+starter,goal = generate_random_puzzle(4,2)
+
+print("Here is the starter puzzle")
+print_puzzle(starter)
+
+print("Here is the goal puzzle")
+print_puzzle(goal)
+
 
 starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
 
