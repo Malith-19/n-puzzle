@@ -57,13 +57,35 @@ def get_input():
 
 
 # comparing puzzles using misplaced tiles
-def compare(puzzle1, puzzle2):
+def compare_misplaced(puzzle1, puzzle2):
     differences = 0
     for i in range(len(puzzle1)):
         for j in range(len(puzzle1[0])):
             if puzzle1[i][j] != puzzle2[i][j]:
                 differences += 1
     return differences
+
+
+# function to get the index of the given element in a puzzle
+def get_index(puzzle, size, element):
+    for i in range(size):
+        for j in range(size):
+            if puzzle[i][j] == element:
+                return [i, j]
+
+
+# comparing puzzles using manhatten distance
+def compare_manhattan(puzzle1, puzzle2):
+    size = len(puzzle1)
+    manhattan_difference = 0
+    for i in range(size):
+        for j in range(size):
+            element = puzzle1[i][j]
+            if element == "-":
+                continue
+            other_puzzle_location = get_index(puzzle2, size, element)
+            manhattan_difference += abs(i - other_puzzle_location[0]) + abs(j - other_puzzle_location[1])
+    return manhattan_difference
 
 
 # finding the blank locations in a puzzle
@@ -154,8 +176,8 @@ def solve(starter, goal, depth=0):
         move = result[1]
         if puzzle in checked:
             continue
-        h = compare(puzzle, goal)
-
+        # h = compare_misplaced(puzzle, goal) # getting misplaced tiles
+        h = compare_manhattan(puzzle, goal) # getting manhattan distance
         # f = h + depth
         node = Node(depth + h, puzzle, starter, move)
         if h == 0:
@@ -168,12 +190,12 @@ def solve(starter, goal, depth=0):
     return solve(tree.pop(0), goal, depth + 1)
 
 
-# printing the path
-def print_path(ending_node):
+# generating the path
+def write_path(ending_node):
     if ending_node.parent:
-        print_path(ending_node.parent)
-        print(ending_node.move)
-    return
+        return write_path(ending_node.parent) + ", " + ending_node.move
+    else:
+        return ""
 
 
 # driver code
@@ -183,8 +205,13 @@ checked = []
 starter, goal = get_input()  # getting the starter and the goal puzzle
 
 starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
-ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to find
-# the path
 
-# printing the path to solve the puzzle
-print_path(ending_node)
+try:
+    ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to find
+    # the path
+
+    # printing the path to solve the puzzle
+    print(write_path(ending_node))
+except:
+    print("Unsolvable")
+
