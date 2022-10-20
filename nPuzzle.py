@@ -1,6 +1,8 @@
 from copy import deepcopy
 import random
+import sys
 
+sys.setrecursionlimit(5000) # changing the recursive limit
 
 class Node:
     def __init__(self, f, puzzle, parent, move):
@@ -33,7 +35,7 @@ def generate_random_puzzle(size, blanks):
 
 # moving a given function n number of  random moves.
 def random_move(puzzle):
-    moves = random.randint(1, 10)  # generating random number of moves
+    moves = random.randint(1, 20)  # generating random number of moves
     goal = deepcopy(puzzle)  # getting deepcopy of the given starter puzzle
 
     # moving n times
@@ -222,7 +224,7 @@ def moves(puzzle, blank_locations):
 
 
 # main solving function
-def solve(starter, goal, depth=0,misplaced=True):
+def solve(starter, goal, depth=0, misplaced=True):
     checked.append(starter.puzzle)
 
     blanks = blank_finder(starter.puzzle)
@@ -234,9 +236,9 @@ def solve(starter, goal, depth=0,misplaced=True):
         if puzzle in checked:
             continue
         if misplaced:
-            h = compare_misplaced(puzzle,goal)
+            h = compare_misplaced(puzzle, goal)
         else:
-            h = compare_manhattan(puzzle,goal)
+            h = compare_manhattan(puzzle, goal)
         # f = h + depth
         node = Node(depth + h, puzzle, starter, move)
         if h == 0:
@@ -257,13 +259,13 @@ def write_path(ending_node):
 
 
 # driver code
-def solve_one_random_puzzle():
-    global tree,checked
+def solve_one_random_puzzle(misplaced_method=True):
+    global tree, checked
     tree = []
     checked = []
 
     # starter, goal = get_input()  # getting the starter and the goal puzzle
-    starter, goal = generate_random_puzzle(4, 2)
+    starter, goal = generate_random_puzzle(20, 1)
 
     print("Here is the starter puzzle")
     print_puzzle(starter)
@@ -273,13 +275,13 @@ def solve_one_random_puzzle():
 
     starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
 
-
-    ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to
-                                                 # find path
+    ending_node = solve(starter_node, goal,
+                        misplaced=misplaced_method)  # receiving ending(goal) puzzle as a node object which can back track to
+    # find path
 
     # printing the path to solve the puzzle
     print(write_path(ending_node))
 
 
-for i in range(5):
-    solve_one_random_puzzle()
+for i in range(1):
+    solve_one_random_puzzle(False)
