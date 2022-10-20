@@ -24,6 +24,10 @@ def generate_random_puzzle(size, blanks):
     # generating the goal puzzle
     goal = random_move(puzzle_2d)
 
+    # checking for starter and goal is equal. Then generating goal puzzle again.
+    while puzzle_2d == goal:
+        goal = random_move(puzzle_2d)
+
     return puzzle_2d, goal
 
 
@@ -253,25 +257,29 @@ def write_path(ending_node):
 
 
 # driver code
-tree = []
-checked = []
+def solve_one_random_puzzle():
+    global tree,checked
+    tree = []
+    checked = []
 
-# starter, goal = get_input()  # getting the starter and the goal puzzle
-starter, goal = generate_random_puzzle(4, 2)
+    # starter, goal = get_input()  # getting the starter and the goal puzzle
+    starter, goal = generate_random_puzzle(4, 2)
 
-print("Here is the starter puzzle")
-print_puzzle(starter)
+    print("Here is the starter puzzle")
+    print_puzzle(starter)
 
-print("Here is the goal puzzle")
-print_puzzle(goal)
+    print("Here is the goal puzzle")
+    print_puzzle(goal)
 
-starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
+    starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
 
-try:
+
     ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to
-    # find path
+                                                 # find path
 
     # printing the path to solve the puzzle
     print(write_path(ending_node))
-except:
-    print("Unsolvable")
+
+
+for i in range(5):
+    solve_one_random_puzzle()
