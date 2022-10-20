@@ -10,45 +10,51 @@ class Node:
         self.move = move
 
 
-# function to generate a random n puzzle
+# function to generate a random n puzzle with m blanks
 def generate_random_puzzle(size, blanks):
     puzzle = [str(i) for i in range(1, size * size - blanks + 1)]  # adding numbers to list
     puzzle += ["-" for i in range(blanks)]  # adding blanks to list
-    random.shuffle(puzzle)
+    random.shuffle(puzzle)  # shuffling the puzzle to get a random starter puzzle
 
+    # converting to 2d starter puzzle
     puzzle_2d = []
     for i in range(size):
         puzzle_2d.append(puzzle[i * size:(i + 1) * size])
 
+    # generating the goal puzzle
     goal = random_move(puzzle_2d)
 
-    return puzzle_2d,goal
+    return puzzle_2d, goal
 
+
+# moving a given function n number of  random moves.
 def random_move(puzzle):
-    moves = random.randint(1,10)
-    goal = deepcopy(puzzle)
+    moves = random.randint(1, 10)  # generating random number of moves
+    goal = deepcopy(puzzle)  # getting deepcopy of the given starter puzzle
+
+    # moving n times
     for i in range(moves):
         blank_locations = blank_finder(goal)
-        moving_blank = blank_locations[random.randint(0,len(blank_locations)-1)]
-        move_type = random.randint(0,3)
+        moving_blank = blank_locations[random.randint(0, len(blank_locations) - 1)]  # getting random blank to move
+        move_type = random.randint(0, 3)  # getting random move(left, right, up, down)
 
         if move_type == 0:
-            move = move_left(goal,moving_blank)
+            move = move_left(goal, moving_blank)
             if move:
                 goal = move[0]
 
         elif move_type == 1:
-            move = move_right(goal,moving_blank)
+            move = move_right(goal, moving_blank)
             if move:
                 goal = move[0]
 
         elif move_type == 2:
-            move = move_up(goal,moving_blank)
+            move = move_up(goal, moving_blank)
             if move:
                 goal = move[0]
 
         else:
-            move = move_up(goal,moving_blank)
+            move = move_up(goal, moving_blank)
             if move:
                 goal = move[0]
 
@@ -133,7 +139,8 @@ def blank_finder(puzzle):
     return blanks
 
 
-def move_left(puzzle,blank_location):
+# moving the blank left
+def move_left(puzzle, blank_location):
     if blank_location[1] != 0:
         puzzle_left_copy = deepcopy(puzzle)
         move = "(" + puzzle_left_copy[blank_location[0]][
@@ -141,10 +148,11 @@ def move_left(puzzle,blank_location):
         puzzle_left_copy[blank_location[0]][blank_location[1]] = puzzle_left_copy[blank_location[0]][
             blank_location[1] - 1]
         puzzle_left_copy[blank_location[0]][blank_location[1] - 1] = "-"
-        return [puzzle_left_copy,move]
+        return [puzzle_left_copy, move]
 
 
-def move_right(puzzle,blank_location):
+# moving the blank right
+def move_right(puzzle, blank_location):
     if blank_location[1] != len(puzzle[0]) - 1:
         puzzle_right_copy = deepcopy(puzzle)
         move = "(" + puzzle_right_copy[blank_location[0]][
@@ -154,7 +162,9 @@ def move_right(puzzle,blank_location):
         puzzle_right_copy[blank_location[0]][blank_location[1] + 1] = "-"
         return [puzzle_right_copy, move]
 
-def move_up(puzzle,blank_location):
+
+# moving the blank up
+def move_up(puzzle, blank_location):
     if blank_location[0] != 0:
         puzzle_up_copy = deepcopy(puzzle)
         move = "(" + puzzle_up_copy[blank_location[0] - 1][blank_location[1]] + ",down)"
@@ -162,7 +172,9 @@ def move_up(puzzle,blank_location):
         puzzle_up_copy[blank_location[0] - 1][blank_location[1]] = "-"
         return [puzzle_up_copy, move]
 
-def move_down(puzzle,blank_location):
+
+# moving the blank down
+def move_down(puzzle, blank_location):
     if blank_location[0] != len(puzzle) - 1:
         puzzle_down_copy = deepcopy(puzzle)
         move = "(" + puzzle_down_copy[blank_location[0] + 1][
@@ -171,12 +183,15 @@ def move_down(puzzle,blank_location):
             blank_location[1]]
         puzzle_down_copy[blank_location[0] + 1][blank_location[1]] = "-"
         return [puzzle_down_copy, move]
+
+
 # function to do a one move in a puzzle.
 def one_move(puzzle, blank_location):
     outputs = []
 
     # move left the blank
-    movements = [move_left(puzzle,blank_location),move_right(puzzle,blank_location),move_up(puzzle,blank_location),move_down(puzzle,blank_location)]
+    movements = [move_left(puzzle, blank_location), move_right(puzzle, blank_location), move_up(puzzle, blank_location),
+                 move_down(puzzle, blank_location)]
 
     for move in movements:
         if move:
@@ -203,7 +218,7 @@ def moves(puzzle, blank_locations):
 
 
 # main solving function
-def solve(starter, goal, depth=0):
+def solve(starter, goal, depth=0,misplaced=True):
     checked.append(starter.puzzle)
 
     blanks = blank_finder(starter.puzzle)
@@ -214,8 +229,10 @@ def solve(starter, goal, depth=0):
         move = result[1]
         if puzzle in checked:
             continue
-        # h = compare_misplaced(puzzle, goal) # getting misplaced tiles
-        h = compare_manhattan(puzzle, goal) # getting manhattan distance
+        if misplaced:
+            h = compare_misplaced(puzzle,goal)
+        else:
+            h = compare_manhattan(puzzle,goal)
         # f = h + depth
         node = Node(depth + h, puzzle, starter, move)
         if h == 0:
@@ -230,10 +247,9 @@ def solve(starter, goal, depth=0):
 
 # generating the path
 def write_path(ending_node):
-    if ending_node.parent:
-        return write_path(ending_node.parent) + ", " + ending_node.move
-    else:
-        return ""
+    if ending_node.parent.move:
+        return write_path(ending_node.parent) + "," + ending_node.move
+    return ending_node.move
 
 
 # driver code
@@ -241,7 +257,7 @@ tree = []
 checked = []
 
 # starter, goal = get_input()  # getting the starter and the goal puzzle
-starter,goal = generate_random_puzzle(4,2)
+starter, goal = generate_random_puzzle(4, 2)
 
 print("Here is the starter puzzle")
 print_puzzle(starter)
@@ -249,15 +265,13 @@ print_puzzle(starter)
 print("Here is the goal puzzle")
 print_puzzle(goal)
 
-
 starter_node = Node(0, starter, None, None)  # converting stater puzzle to node.
 
 try:
-    ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to find
-    # the path
+    ending_node = solve(starter_node, goal)  # receiving ending(goal) puzzle as a node object which can back track to
+    # find path
 
     # printing the path to solve the puzzle
     print(write_path(ending_node))
 except:
     print("Unsolvable")
-
